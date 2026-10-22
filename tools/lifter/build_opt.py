@@ -194,10 +194,10 @@ def run_limited(cmd, limit, mem=0):
     p = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, start_new_session=(os.name != 'nt'))
     try:
         out, _ = p.communicate(timeout=limit)
-        out = out.decode('latin-1')[-2000:]
-        if out_of_memory(p.returncode, out):
+        out = out.decode('latin-1')
+        if out_of_memory(p.returncode, out):         # the whole output: clang's stack dump after "LLVM ERROR: out of memory" fills the tail
             return None, OOM, time.time() - t
-        return p.returncode, out, time.time() - t
+        return p.returncode, out[-2000:], time.time() - t
     except subprocess.TimeoutExpired:
         if os.name == 'nt':
             subprocess.run(['taskkill', '/PID', str(p.pid), '/T', '/F'], capture_output=True)      # this compiler and its -cc1 child only
